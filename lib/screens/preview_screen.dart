@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import '../models/check_in_data.dart';
+import '../services/storage_service.dart';
 
 class PreviewScreen extends StatelessWidget {
   final File imageFile;
@@ -12,6 +14,21 @@ class PreviewScreen extends StatelessWidget {
     required this.address,
     required this.timestamp,
   });
+
+  Future<void> _submitCheckIn(BuildContext context) async {
+    final storageService = StorageService();
+    final checkInData = CheckInData(
+      imagePath: imageFile.path,
+      address: address,
+      timestamp: timestamp,
+    );
+
+    await storageService.saveCheckInData(checkInData);
+    if (context.mounted) {
+      Navigator.pop(context);
+      Navigator.pop(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,10 +127,7 @@ class PreviewScreen extends StatelessWidget {
                 ),
                 // Submit Button
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => _submitCheckIn(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(
