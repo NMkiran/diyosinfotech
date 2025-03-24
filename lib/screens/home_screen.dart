@@ -14,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final StorageService _storageService = StorageService();
   List<CheckInData> _checkInData = [];
+  int? _selectedIndex;
 
   @override
   void initState() {
@@ -68,41 +69,82 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: _checkInData.length,
                 itemBuilder: (context, index) {
                   final data = _checkInData[index];
-                  return Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Image.file(
-                            File(data.imagePath),
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                data.timestamp,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedIndex = _selectedIndex == index ? null : index;
+                      });
+                    },
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      elevation: _selectedIndex == index ? 8 : 2,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // Image
+                          Image.file(File(data.imagePath), fit: BoxFit.cover),
+
+                          // Details Overlay
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withOpacity(
+                                    _selectedIndex == index ? 0.7 : 0.0,
+                                  ),
+                                  Colors.black.withOpacity(
+                                    _selectedIndex == index ? 0.9 : 0.5,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Date & Time Tag
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.8),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    data.timestamp,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                data.address,
-                                style: const TextStyle(fontSize: 12),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                                const SizedBox(height: 8),
+                                // Location
+                                AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 200),
+                                  opacity: _selectedIndex == index ? 1.0 : 0.0,
+                                  child: Text(
+                                    data.address,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -113,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             MaterialPageRoute(builder: (context) => const CheckInScreen()),
           );
-          _loadCheckInData(); // Reload data after returning from CheckInScreen
+          _loadCheckInData();
         },
         backgroundColor: Colors.green,
         child: const Icon(Icons.camera_alt, color: Colors.white),
